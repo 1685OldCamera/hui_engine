@@ -1,0 +1,25 @@
+总体架构
+1.1、总架构图中，hixl中包含三个engine，hixl_engine（支持通过host发起数据传输或者下发aicpu数据传输kernel）、aiv_engine （支持通过aiv发起的数据传输kernel或者任意（计算或者融合）kernel内的的aiv直驱通信调用） 、kvu_engine（支持nds，通过host cpu触发的kvu到npu hbm数据传输），删除现有的commengine/fabricengine…那个框
+1.2、aiv_engine和kvu_engine分为两大类，先设计aiv_engine，处理hbm和ddr等内存介质相互之间的传输，再设计kvu_engine，处理hbm和kvu介质之间的传输 
+1.3、实现上，同一个NPU进程，支撑不同类型的engine实例化（hixl_engine、aiv_engine、kvu_engine）
+1.4、不同的engine使用相同的函数API接口（API维持：控制面API和host数据面API、device数据面API），各engine在内部实现功能重载（ aiv_engine不同于aiv_engine或者hix_engine，内部有些函数可以不实现）
+
+aiv_engine设计
+1.1、控制面API和功能完全复用hixl_engine相关接口和功能（内存管理、元数据交互、建链等）
+1.2、数据面即前期分析过的api，那个比较全面了，名字从huengine改成aivengine
+1.3、整个架构中不再采用nixl的memview（如现有参数通过hue_mve_t mvh这个传递），因为需要融合到hixl中，整体沿用当前hixl架构中控制面的相关处理方式和流程，去除hue_mve_t结构体
+1.4、aiv_engine底层协议支持urma、ubmem、roce
+1.5、明确下ch（channel）在当前的使用方式，确保和当前hixl以及hcomm的channel保持一致
+1.6、确认在hcomm中simd的调用api，同样会有simt的调用api（如put_nbi → RoCE, AscendC::Hcomm<ROCE>::WriteNbi，对应有AscendC::simt::Hcomm<ROCE>::WriteNbi等）
+
+2、NDS架构设计：
+2.1、控制面通过host cpu作为中间桥梁，实现kvu和hbm间元数据交互和建链，数据面host cpu向kvu发送read/write指令，并由kvu向hbm发起dma搬运
+2.2、在host cpu创建2个hixl 实例，分别用于管理npu（本地）和kvu（远端），两者使用kvu_engine相互通信
+2.3、参考NIXL GDS，在registermem中创建cufile_handle，将远端storage/IO挂接到本地（register_cufilehandled等）；connect中交互npu的jetty信息（元数据），实现kvu和npu的建链；
+2.4、kvu_engine底层协议支持urma、roce等xDMA搬运
+
+
+3、NDS其他功能需求：
+3.1、针对不同的FD，需要下发不同的batch IO指令
+3.2、将相同FD的不连续buffer进行重排组合（需要针对file_offset按照升序排序，便于底层NDS进行合并和IO拆分），对每个FD调用1次batch IO指令（当不连续buffer超过252个时，NDS底层会拆分成多次batch IO下发）
+3.3、对同一个FD进行不连续的buffer可以聚合，支持scatter（从内存写到文件不连续的buffer）/gather（文件不连续的buffer写到内存），然后对应1次batch IO指令
