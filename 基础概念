@@ -1,0 +1,15 @@
+HixlEngine = 一个进程（本端）的通信实体，全局只有一个。
+
+它代表"我"这台机器上的 hixl 运行时。你平时直接调用的 hixl::Hixl 公开 API，底层就落到这一个 Engine 上。它干三件事：
+
+1. 初始化运行时、监听端口（如果本端要当 server）
+2. 管理本端已注册的内存（ mem_map_ ）
+3. 管理到所有对端的连接（ client_manager_ ）
+HixlClient = 本端到"某一个对端"的一条连接，每个对端各一个。
+
+它不是全局的，而是 Engine 内部按需创建的。你 Connect("192.168.1.10:8000") 时，Engine 就为这个对端建一个（或复用已有的）Client。它干的事：
+
+1. 记住对端地址 server_ip_ / server_port_
+2. 和对端 server 建 TCP 控制连接（ ctrl_socket_ ）
+3. 持有真正的数据面通道（ client_handler_ → 底层 hcomm 的 Endpoint/Channel）
+4. 真正执行 TransferSync / TransferAsync ，并记录异步请求 
