@@ -14,8 +14,8 @@ aiv_engine设计
 
 2、NDS架构设计：
 2.1、控制面通过host cpu作为中间桥梁，实现kvu和hbm间元数据交互和建链，数据面host cpu向kvu发送read/write指令，并由kvu向hbm发起dma搬运
-2.2、在host cpu创建2个hixl 实例，分别用于管理npu（本地）和kvu（远端），两者使用kvu_engine相互通信
-2.3、参考NIXL GDS，在registermem中创建cufile_handle，将远端storage/IO挂接到本地（register_cufilehandled等）；connect中交互npu的jetty信息（元数据），实现kvu和npu的建链；
+2.2、备选架构1：在host cpu创建2个hixl 实例，分别用于管理npu（本地）和kvu（远端），两者使用kvu_engine相互通信
+2.3、备选架构2：参考NIXL GDS，在registermem中创建cufile_handle，将远端storage/IO挂接到本地（register_cufilehandled等）；connect中交互npu的jetty信息（元数据），实现kvu和npu的建链；
 2.4、kvu_engine底层协议支持urma、roce等xDMA搬运
 
 
