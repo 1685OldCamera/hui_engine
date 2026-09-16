@@ -1,3 +1,4 @@
+迭代9：
 总体架构
 1.1、总架构图中，hixl中包含三个engine，hixl_engine（支持通过host发起数据传输或者下发aicpu数据传输kernel）、aiv_engine （支持通过aiv发起的数据传输kernel或者任意（计算或者融合）kernel内的的aiv直驱通信调用） 、kvu_engine（支持nds，通过host cpu触发的kvu到npu hbm数据传输），删除现有的commengine/fabricengine…那个框
 1.2、aiv_engine和kvu_engine分为两大类，先设计aiv_engine，处理hbm和ddr等内存介质相互之间的传输，再设计kvu_engine，处理hbm和kvu介质之间的传输 
@@ -23,3 +24,7 @@ aiv_engine设计
 3.1、针对不同的FD，需要下发不同的batch IO指令
 3.2、将相同FD的不连续buffer进行重排组合（需要针对file_offset按照升序排序，便于底层NDS进行合并和IO拆分），对每个FD调用1次batch IO指令（当不连续buffer超过252个时，NDS底层会拆分成多次batch IO下发）
 3.3、对同一个FD进行不连续的buffer可以聚合，支持scatter（从内存写到文件不连续的buffer）/gather（文件不连续的buffer写到内存），然后对应1次batch IO指令
+
+/////////////
+迭代10：
+1、aiv_engine部分：rma目前按照simd和simt表示，这个保持；对于simd相关，按照高阶api和低阶api分开设计；高级API保持统一put/get风格即可，不区分底层通信协议；低阶api设计，需要涵盖udma、mte、rdma，通过api名称显式表示，内部调用不同的底层依赖接口；对于simt也类似，高级API保持统一put/get风格，低阶api涵盖udma、mte、rdma，通过api名称显式表示，内部调用不同的底层依赖接口（mte采用指针直接赋值，simt urma采用多线程urma wqe和ring db，调用hcomm相关的底层依赖,simt rdma采用多线程rdma wqe和ring db，调用hcomm相关的底层依赖）
