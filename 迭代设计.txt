@@ -28,3 +28,10 @@ aiv_engine设计
 /////////////
 迭代10：
 1、aiv_engine部分：rma目前按照simd和simt表示，这个保持；对于simd相关，按照高阶api和低阶api分开设计；高级API保持统一put/get风格即可，不区分底层通信协议；低阶api设计，需要涵盖udma、mte、rdma，通过api名称显式表示，内部调用不同的底层依赖接口；对于simt也类似，高级API保持统一put/get风格，低阶api涵盖udma、mte、rdma，通过api名称显式表示，内部调用不同的底层依赖接口（mte采用指针直接赋值，simt urma采用多线程urma wqe和ring db，调用hcomm相关的底层依赖,simt rdma采用多线程rdma wqe和ring db，调用hcomm相关的底层依赖）
+
+/////////////
+迭代11
+1、seturmadelegate()的作用
+2、memory_manager、channel_manager的作用
+2、reigsteraivsharehandleprocessor() 在fabricmemengine中也有相同的函数？流程是否相同？
+
