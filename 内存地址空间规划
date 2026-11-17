@@ -1,0 +1,18 @@
+基于如下表格，生成1个html工具：
+其中输入列为：总地址空间(TB)	超节点规模	CPU:NPU配比	单NPU HBM(GB)	
+
+第一行：总地址空间(TB)	超节点规模	CPU:NPU配比	单NPU HBM(GB)	HBM总计(TB)	DDR剩余(TB)	单CPU DDR平均(GB)	单CPU DDR(GB)	单NPU HBM(GB)	使用CPU 	NPU	DDR共计(TB)	HBM共计(TB)	共计(TB)
+									Decoder(entry)	Decoder(entry)
+第二行：输入值，TB	总的NPU数	总CPU数：总NPU数比例，常见为1/4,1/8	单个NPU分配的HBM容量（输入值，按照entry备选值配置）	所有NPU分配的总容量	总地址空间减去HBM总容量之后剩余值	总剩余容量除以总的CPU数（CPU数目基于CPU：NPU配比计算）	确定最终每个CPU的DDR容量（基于前面计算的单CPU DDR平均值，从entry备选值中选择最大最接近的）	输入的HBM配置值	所有CPU DDR所需要的总entry数；对于单个CPU的DDR容量，从entry备选值中选择，以最小的为准：step1：1个entry表示1~2个CPU DDR，则占用decoder为1~0.5；step2：2~3个entry表示1个CPU DDR，则占用decoder为2~3	所有NPU HBM所需要的总entry数；对于单个CPU的DDR容量，从entry备选值中选择，以最小的为准：step1：1个entry表示1~2个NPU HBM，则占用decoder为1~0.5；step2：2~3个entry表示1个NPU HBM，则占用decoder为2~3	基于单CPU DDR计算的总DDR容量	基于单NPU HBM计算的总HBM容量	总DDR+总HBM
+
+另外，entry备选值如下：
+2
+4
+8
+16
+32
+64
+128
+256
+512
+1024
